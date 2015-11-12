@@ -1,0 +1,28 @@
+1,/<table/d;
+/table/,$d;
+/data-value/d;
+s/,//g;
+/\(^title=\|<span class="secondaryInfo"\|[0-9].$\|<\/strong>$\)/!d;
+s/^ *//
+/href/d;
+s/^title=".* >\(.*\)<.*/\1/g;
+s/<span class="secondaryInfo">(//g;
+s/)<\/span>//g;
+s/<strong title="//g
+s/ based on /\n/
+s/ votes.*$/\n/
+s/\.$//g;	
+p;
+
+cat part1.dat | grep '|193[0-9]|' | cut -d "|" -f 2
+cat part1.dat | cut -d "|" -f 2 | grep -e '\(\w\{1,\}\) .* \1 ' -e '^\(\w\{1,\}\) .* \1$' -e '\(\w\{1,\}\)[ ]\1$'
+cat part1.dat | cut -d "|" -f 2 | grep -n '[^A-Za-z\ ]' | cut -d ":" -f 1
+cat part1.dat | cut -d "|" -f 5 | grep '^[0-4][0-9][0-9][0-9][0-9]$' | wc -l
+
+awk -F '|' 'BEGIN {sum = 0} {sum+=$5} END {print sum}' part1.dat
+awk -F '|' '{a[$3]+=$5} END { max = 0; for(i in a){x = a[i];if(x>max){max = x;y = i;}}print y;}' part1.dat
+awk -F '|' '{year = $3;remainder = year%10;decade = year - remainder;arrLoc = decade/10;count[arrLoc] = count[arrLoc]+1;}END{max = 0;for(i in count){if(max < count[i]){max = count[i];final = i;}}print final*10;}' part1.dat
+awk -F '|' 'BEGIN{sumLess = 0;sumMore = 0;countLess = 0;countMore = 0;}{if($4 > 8.5){countMore = countMore+1;sumMore = sumMore + $5;}else if($4 < 8.5){countLess = countLess+1;sumLess = sumLess + $5;}}END{m = sumMore/countMore;l = sumLess/countLess;printf("%f%f\n",m,l);}' part1.dat
+awk -F ' ' 'BEGIN{totalWords = 0;}{totalWords += NF;}END{res = totalWords/250;printf("%f\n",res);}' part1.dat
+awk -F '|' '{split($2, t, " ");for (i in t){if(t[i] != "The" && t[i] != "the" && t[i] != "of")finalArr[t[i]] += 1;}}END{max = 0;for(i in finalArr){if(finalArr[i] >max){max = finalArr[i];result = i;}}print result;}' part1.dat
+awk -F '|' 'BEGIN{maxLen =0;minLength = 10000;}{if(length($2) > maxLength){maxLength = length($2);maxMovie = $2;}else if(length($2) < minLength){minLength =length($2);minMovie = $2;}}END{print maxMovie "\n" minMovie;}' part1.dat

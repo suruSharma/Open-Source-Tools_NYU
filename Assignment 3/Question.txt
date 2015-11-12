@@ -1,0 +1,61 @@
+For this assignment, we'll be creating a new command called calendar that can be used to create and view calendar events. The command will store all of its data in a subdirectory of your home directory.
+
+The format of the command is:
+   calendar option [args]
+where option is one of the option names described in this assignment (create, delete, show, link, export). Each option will have its own set of arguments that follow the option name.
+
+Detailed Description
+
+Each calendar event will have its own identifier, which will be based on the start time of the event (specifically, it will be a string representing the number of seconds since 1/1/70 UTC). It will not be possible to have two events in a calendar that start at the same time, so this id will uniquely determine an event. An event has these properties: a start time, an end time, a title, and a description. To create an event, the create option should be used:
+    calendar create time length [title]
+This command creates a file with the event data under the user's home directory (see file structure below). If event already exists at that time, an error message should be printed to stderr and the command should exit with a non-zero exit status. If the time or length is invalid, an error should be displayed (again stderr exiting non-zero). If the command succeeds, the event id shoud be printed to stdout and the script should exit with status 0. The last argument is optional. If supplied, the title will come from this argument. Otherwise, the title will come from the first line of standard input. To get the description, your script will read from stdin. Titles are required but descriptions are not. The date itself should be parsed with the date command (using date -d), and the length is specified in minutes and can be any positive integer.
+
+To delete an event, the delete option is used.  The syntax is as follows:
+    calendar delete event_id
+The argument will be the event identifier, as discussed above. Nothing will be printed with this command. If the event exists and is successfully deleted, the exit status should be 0. If the event does not exist, the exit status should be 1. If any other error occurs, the exit status should be 2.
+
+The show option can be used to see information about an event. Usage is:
+    calendar show event_id [title | description | time]
+The event_id is described above. An optional third argument can be specified that indicates which information should be printed about the event (the title, the description, or the start/end times). If no argument is specified, all of these should be shown.
+
+The link option allows an event from another calendar to be linked into the user's calendar. It is used as follows:
+    calendar link user_id event_id
+This will find the event in the given user's calendar, and create a new event that links to that user's event. If the original event changes or is deleted, the calendar will be updated appropriately. As with the create option, an error will be returned if the event already exists. It will also be an error if the original event doesn't exist at the time of linking (later on, the original can be removed).
+
+Finally, we have have the export option. Exporting will print a calendar to stdout using the industry standared iCalendar format. It is invoked as follows:
+    calendar export user_id begin_time end_time
+The options specified here are a user id (this will typically be $USER, but can be used to export another user's calendar). The last two arguments are two times that should be parsed with the date command (similar to how the create option works). Events in the calendar between the begin and end times (inclusively) will be exported. The format to use is shown on the page linked to above, but in summary, you should start off with a header like the following:
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Open Source Tools//Calendar for $USER//EN
+And then for each event, use the following format (note that $ vars should be substituted and the times/summary/description are just examples; DTSTAMP can be equal to DTSTART):
+BEGIN:VEVENT
+UID:${USER}_${EVENT_ID}
+DTSTAMP:19970714T170000Z
+ORGANIZER;CN=$USER:MAILTO:$USER@cims.nyu.edu
+DTSTART:19970714T170000Z
+DTEND:19970715T035959Z
+SUMMARY:The event title
+DESCRIPTION:The event description
+END:VEVENT
+And finally end with:
+END:VCALENDAR
+The output will be usable by a number of different calendar applications such as iCal on the Mac, Evolution on Linux, and Google Calendar on the web. There is a handy web tool you can use to see if your calendar is being generated correctly: redirect the output to a file and upload here, and preview the result. If the export command is successful, the exit status will be 0. If the dates are not parsable, a non-zero status should be returned.
+
+
+Implementation
+
+You may use either sh, bash, or ksh to implement this assignment.
+
+You will need to store the information somewhere.  You must use the following directory structure:
+The command should use a root directory called ~/.calendar to store all files. Each time invoked, the directory should be created if it does not exist.  The permissions of this directory and all files below must be world readable. Make sure your home directory has at least execute permission for all users.
+Within the directory ~/.calendar, each event will correspond to a file that is named for the event id. Event ids are the number of seconds since 1/1/1970 UTC (also known as the UNIX epoch).
+Event files will have the following format: the first line will be the duration in minutes. The second line will be the title. Lines three and higher will be the event description. Descriptions can be empty so the line will always have 2 lines or greater.
+Links should be implemented with symbolic links. If the link ends up pointing to a file that gets deleted, it should be skipped with the export command but an error with the show command.
+
+Also make sure that your commands handle error conditions and make no assumptions about existing directory structure (it creates whatever directories it needs to if they do not exist). Print a usage message in the following situations:
+No option is given
+No such option exists
+The wrong number of arguments are given to an option (too few or too many)
+Invalid arguments
+Always return a non-zero status code when an error condition is encountered.

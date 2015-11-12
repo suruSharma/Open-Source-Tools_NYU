@@ -1,0 +1,62 @@
+Part I: Sed
+1. The internet movie database (www.imdb.com) contains a list of the top 250 movies of all time in rank order. In this question, we will write a single sed script to convert the raw HTML into a simpler ASCII formatted "pipe"-delimited text file (to see what the raw HTML looks like, go here and "View Source" in your web browser). The ASCII file we create will have the following format:
+
+Rank|Title|Year|Rating|Votes
+
+For example:
+
+1|The Shawshank Redemption|1994|9.2|1536989
+
+The following will be used to generate the data using your sed script:
+  GET http://www.imdb.com/chart/top |
+  sed -n -f part1.sed |
+  tr '\n' '|' | sed 's/||/\n/g'
+
+Or, you can use a pre-existing version in <>top250.html and run:
+  sed -n -f part1.sed < <>top250.html |
+  tr '\n' '|' | sed 's/||/\n/g'
+
+Your sed script is generating intermediate output that is piped into tr and sed, so the script you write will produce output that looks like this:
+  1
+  The Shawshank Redemption
+  1994
+  9.2
+  1536989
+
+  2
+  ...
+While the HTML may look daunting, our task mostly involves removing unnecessary information and doing some simple transformations. While there are many ways to solve the problem, below is an outline of the steps that need to be performed by your sed script for one proposed solution (please feel free to create your own!). Remember that this must all be covered in a sed script run with -n.
+
+1.Delete all lines through the one that begins the table (contains chart-top250)
+2.Delete all the lines from the end of the table (</table>) to the end of the file
+3.Remove lines that contain a span element with a data-value field
+4.Remove all commas (we don't want numbers to contian them)
+5.For lines that begin with title=, print the text used in the link text (movie name)
+6.For lines that contain a span tag with class secondaryInfo, print extract and print the year.
+7.For lines that contain only a number (and dot), remove the spaces and dot to extract the rank.
+8.For lines that contain a <strong> tag, extract out the rating and votes from the title text. Since votes will be the last field, make sure a blank line is printed after the votes which will be used later in the pipeline to separate out records.
+
+To make sure your script is general purpose, try running with the top 250 tv shows (here or at <>top250tv.html). The remaining questions in this assignment make use of the output from this question, assumed to be stored in the file part1.dat.
+
+Part II: Grep
+Write a single command or a pipeline of commands for each of the following questions.  You may use everything you learned so far, except for sed and awk.
+
+9.List the titles of all the 1930's movies in the top 250.
+10.Print the number of movies that use the same word twice in the title.  A word is any sequence of non-space characters.
+11.Print the rank of each movie that contains a non-alphabetic character in its title (excluding spaces).  For example, "Sunset Blvd.", "8½", and "Se7en" should be included but "Forrest Gump" should not. Sample output:
+  3
+  5
+  6
+  ...
+12.Print the number of movies with less than 50,000 votes.
+
+Part III: Awk
+Write awk scripts to do the following tasks with the movie database.  Use a single awk script per question, and no other tools.
+
+13.Print the total number of votes across all moves.
+14.Print the year that had the greatest number of total votes.
+15.Print the decade that had the greatest number of top 250 movies.
+16.Print the average number of votes for movies above an 8.5 rating and the average number of votes for movies below an 8.5 rating on a single line.
+17.Print the average number of words in each title.  A word is any string of non-whitespace characters.  The answer should be a floating point number, e.g. 3.4
+18.Print the most commonly used word in titles besides "The", "the", and "of".
+19.Print the movies with the longest and shortest titles on two lines.
